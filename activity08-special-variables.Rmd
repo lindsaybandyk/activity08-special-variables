@@ -1,6 +1,6 @@
 ---
 title: "Activity 8"
-author: "Name"
+author: "Lindsay Bandykk"
 output: github_document
 ---
 
@@ -25,7 +25,15 @@ Notice that this file is a tab-delimited file that is stored as a `.txt` file.
 Therefore, you will need to use either `read_delim` with a `delim = ...` argument or (better) `read_tsv` .
 Assign the file to a meaningful object name, be sure to avoid printing any unnecessary information, and give the code chunk a meaningful name.
 
+```{r loading chunks }
+library(tidyverse)
+library(lubridate)
+```
 
+```{r}
+songs <- read_delim(here::here("data/billboard_songs.txt"), delim="\t")
+
+```
 
 
 These data include information on song popularity.
@@ -48,6 +56,11 @@ One way to do this is to use a function like `slice_sample(n = ...)` from `{dply
 dataset %>% 
   slice_sample(n = 200)
 ```
+```{r}
+sample <- songs %>% 
+  slice_sample(n=200)
+```
+
 
 If you wish to work with `{stringr}`, I find it useful to work on vectors first.
 A way to do this is with `pull` from `{dplyr}`.
@@ -71,6 +84,30 @@ Assuming you were 16 years old by 2015.
 - Which artist has been **featured** on the most Billboard charting songs?
 - Which artist has **collaborated** on the most Billboard charting songs?
 - Create some data visualization controlling the order of the character/string variables.
+```{r top10}
+sample %>% 
+  arrange(desc(`weeks on chart`)) %>% 
+  slice_head(n=10) %>% 
+  select(title, artist, `weeks on chart`)
+```
+```{r oldestLeave}
+songs %>% 
+  mutate(days=as_date(ymd(`chart date`))) %>% 
+  arrange(days)
+```
+```{r birthday songs}
+birth <- ymd(20141115)
+songs %>% 
+  filter(`overall peak`==1) %>% 
+  mutate(startDate=ymd(`chart date`)-7*(`weeks on chart`)) %>% 
+  filter(birth %within% interval(ymd(startDate), ymd(`chart date`)))
+```
+```{r featured}
+songs %>% 
+  mutate(feat=str_extract(artist, pattern="featuring .*")) %>% 
+  mutate(featured=str_sub(feat, start=10)) %>% 
+  mutate(individual=str_split(featured, pattern=c(", ", "&")))
+```
 
 ## Attribution
 
